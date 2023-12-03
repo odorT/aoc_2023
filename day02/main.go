@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -36,16 +37,15 @@ func main() {
 
 	lines := strings.Split(string(data), "\n")
 
-	res1 := part1(lines)
+	games := parseGames(lines)
 
-	fmt.Println(res1)
+	fmt.Println("part #1: ", part1(*games))
+	fmt.Println("part #2: ", part2(*games))
 }
 
-func part1(lines []string) int {
+func part1(games Games) int {
 
 	var possibleGamesSum int
-
-	games := loadGames(lines)
 
 	for _, game := range games.Games {
 		flag := true
@@ -62,7 +62,26 @@ func part1(lines []string) int {
 	return possibleGamesSum
 }
 
-func loadGames(lines []string) *Games {
+func part2(games Games) int {
+
+	var res int
+
+	for _, game := range games.Games {
+		var blue, green, red []int
+
+		for _, pick := range game.Picks {
+			blue = append(blue, pick.Blue)
+			green = append(green, pick.Green)
+			red = append(red, pick.Red)
+		}
+		product := slices.Max(blue) * slices.Max(green) * slices.Max(red)
+		res += product
+	}
+
+	return res
+}
+
+func parseGames(lines []string) *Games {
 	var games Games
 
 	for _, line := range lines {
