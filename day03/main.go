@@ -8,10 +8,10 @@ import (
 )
 
 var (
-	SYMBOLS = "@#$%&*-+=/"
-	LENGTH int
-	matrix [][]rune
-	digitCoordinates [][]int
+	ROWLENGTH        int
+	COLUMNLENGTH     int
+	matrix           [][]rune
+	digitCoordinates [][][]int
 )
 
 func main() {
@@ -29,22 +29,29 @@ func main() {
 		for _, char := range line {
 			lineSlice = append(lineSlice, char)
 		}
-		
+
 		matrix = append(matrix, lineSlice)
 	}
-	
+
 	// store coordinates of each digit
+	// digitCoordinates: [ [ [], [] ], [ [] ], [ [], [], [] ] ]
 	for idxI, i := range matrix {
-		var numbers [][]int
+		var number [][]int
+
 		for idxJ, j := range i {
+
 			if unicode.IsDigit(j) {
-				digitCoordinates = append(digitCoordinates, []int{idxI, idxJ})
+				number = append(number, []int{idxI, idxJ})
+			} else if len(number) != 0 {
+				digitCoordinates = append(digitCoordinates, number)
+				number = [][]int{}
 			}
 		}
 	}
 
 	// set length of each line
-	LENGTH = len(matrix[0])
+	ROWLENGTH = len(matrix[0])
+	COLUMNLENGTH = len(matrix)
 
 	res1 := part1()
 	fmt.Println("part #1: ", res1)
@@ -52,29 +59,61 @@ func main() {
 
 func part1() int {
 
-	// fmt.Println(matrix)
-	// for _, i := range matrix {
-	// 	for _, j := range i {
-	// 		fmt.Println(string(j))
-	// 	}
-	// }
+	// var partNumbersSum int
 
-	for _, coordinate := range digitCoordinates {
-		x := coordinate[0]
-		y := coordinate[1]
-		fmt.Println(string(matrix[x][y]))
+	for _, numbers := range digitCoordinates {
+		var nearCoordinates [][]int
+
+		for _, number := range numbers {
+			// var left, leftUpper, up, rightUpper, right, rightDown, down, leftDown []int
+
+			// set all near coordinates
+			if number[1]-1 >= 0 {
+				nearCoordinates = append(nearCoordinates, []int{number[0], number[1] - 1}) // left
+			}
+			if number[0]-1 >= 0 && number[1]-1 >= 0 {
+				nearCoordinates = append(nearCoordinates, []int{number[0] - 1, number[1] - 1}) // leftUpper
+			}
+			if number[0]-1 >= 0 {
+				nearCoordinates = append(nearCoordinates, []int{number[0] - 1, number[1]}) // up
+			}
+			if number[0]-1 >= 0 && number[1]+1 < ROWLENGTH {
+				nearCoordinates = append(nearCoordinates, []int{number[0] - 1, number[1] + 1}) // rightUpper
+			}
+			if number[1]+1 < ROWLENGTH {
+				nearCoordinates = append(nearCoordinates, []int{number[0], number[1] + 1}) // right
+			}
+			if number[0]+1 < COLUMNLENGTH && number[1]+1 < ROWLENGTH {
+				nearCoordinates = append(nearCoordinates, []int{number[0] + 1, number[1] + 1}) // rightDown
+			}
+			if number[0]+1 < COLUMNLENGTH {
+				nearCoordinates = append(nearCoordinates, []int{number[0] + 1, number[1]}) // down
+			}
+			if number[0]+1 < COLUMNLENGTH && number[1]-1 >= 0 {
+				nearCoordinates = append(nearCoordinates, []int{number[0] + 1, number[1] - 1}) // leftDown
+			}
+
+		}
+		fmt.Println(nearCoordinates)
+		for _, near := range nearCoordinates {
+			x := near[0]
+			y := near[1]
+			if string(matrix[x][y]) != "." && ! unicode.IsDigit(matrix[x][y]) {
+				fmt.Println(numbers)
+			}
+		}
 	}
 
-	fmt.Println(digitCoordinates)
 	return 0
 }
 
-// .....
-// .345.
-// .....
-
-// #1 -> 8
-// #2 -> 10
-// #2 -> 12
-
-// use X/Y system to find number of dots and if less than full-dots count, add up
+// 467..114..
+// ...*......
+// ..35..633.
+// ......#...
+// 617*......
+// .....+.58.
+// ..592.....
+// ......755.
+// ...$.*....
+// .664.598..
