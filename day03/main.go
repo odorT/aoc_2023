@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"unicode"
 )
@@ -59,52 +60,97 @@ func main() {
 
 func part1() int {
 
-	// var partNumbersSum int
+	var partNumbersSum int
 
 	for _, numbers := range digitCoordinates {
+		fmt.Println(numbers)
 		var nearCoordinates [][]int
 
-		for _, number := range numbers {
-			// var left, leftUpper, up, rightUpper, right, rightDown, down, leftDown []int
-
-			// set all near coordinates
-			if number[1]-1 >= 0 {
-				nearCoordinates = append(nearCoordinates, []int{number[0], number[1] - 1}) // left
+		// find all near coordinates of each digit logically. e.g. all x's coordinates will be stored.
+		// ......
+		// .xxxxx.
+		// .x467x.
+		// .xxxxx.
+		// .......
+		for idx, number := range numbers {
+			if idx == 0 {
+				// --
+				// | 
+				// --
+				if number[1]-1 >= 0 {
+					nearCoordinates = append(nearCoordinates, []int{number[0], number[1] - 1}) // left
+				}
+				if number[0]-1 >= 0 && number[1]-1 >= 0 {
+					nearCoordinates = append(nearCoordinates, []int{number[0] - 1, number[1] - 1}) // leftUpper
+				}
+				if number[0]-1 >= 0 {
+					nearCoordinates = append(nearCoordinates, []int{number[0] - 1, number[1]}) // up
+				}
+				if number[0]+1 < COLUMNLENGTH {
+					nearCoordinates = append(nearCoordinates, []int{number[0] + 1, number[1]}) // down
+				}
+				if number[0]+1 < COLUMNLENGTH && number[1]-1 >= 0 {
+					nearCoordinates = append(nearCoordinates, []int{number[0] + 1, number[1] - 1}) // leftDown
+				}
+			} else if idx == len(numbers) - 1 {
+				// --
+				//  |
+				// --
+				if number[0]-1 >= 0 {
+					nearCoordinates = append(nearCoordinates, []int{number[0] - 1, number[1]}) // up
+				}
+				if number[0]-1 >= 0 && number[1]+1 < ROWLENGTH {
+					nearCoordinates = append(nearCoordinates, []int{number[0] - 1, number[1] + 1}) // rightUpper
+				}
+				if number[1]+1 < ROWLENGTH {
+					nearCoordinates = append(nearCoordinates, []int{number[0], number[1] + 1}) // right
+				}
+				if number[0]+1 < COLUMNLENGTH && number[1]+1 < ROWLENGTH {
+					nearCoordinates = append(nearCoordinates, []int{number[0] + 1, number[1] + 1}) // rightDown
+				}
+				if number[0]+1 < COLUMNLENGTH {
+					nearCoordinates = append(nearCoordinates, []int{number[0] + 1, number[1]}) // down
+				}
+			} else {
+				// --
+				//
+				// --
+				if number[0]-1 >= 0 {
+					nearCoordinates = append(nearCoordinates, []int{number[0] - 1, number[1]}) // up
+				}
+				if number[0]+1 < COLUMNLENGTH {
+					nearCoordinates = append(nearCoordinates, []int{number[0] + 1, number[1]}) // down
+				}
 			}
-			if number[0]-1 >= 0 && number[1]-1 >= 0 {
-				nearCoordinates = append(nearCoordinates, []int{number[0] - 1, number[1] - 1}) // leftUpper
-			}
-			if number[0]-1 >= 0 {
-				nearCoordinates = append(nearCoordinates, []int{number[0] - 1, number[1]}) // up
-			}
-			if number[0]-1 >= 0 && number[1]+1 < ROWLENGTH {
-				nearCoordinates = append(nearCoordinates, []int{number[0] - 1, number[1] + 1}) // rightUpper
-			}
-			if number[1]+1 < ROWLENGTH {
-				nearCoordinates = append(nearCoordinates, []int{number[0], number[1] + 1}) // right
-			}
-			if number[0]+1 < COLUMNLENGTH && number[1]+1 < ROWLENGTH {
-				nearCoordinates = append(nearCoordinates, []int{number[0] + 1, number[1] + 1}) // rightDown
-			}
-			if number[0]+1 < COLUMNLENGTH {
-				nearCoordinates = append(nearCoordinates, []int{number[0] + 1, number[1]}) // down
-			}
-			if number[0]+1 < COLUMNLENGTH && number[1]-1 >= 0 {
-				nearCoordinates = append(nearCoordinates, []int{number[0] + 1, number[1] - 1}) // leftDown
-			}
-
 		}
-		fmt.Println(nearCoordinates)
+
+		// fmt.Println(digitCoordinates)
+		// fmt.Println(numbers, nearCoordinates)
+
 		for _, near := range nearCoordinates {
 			x := near[0]
 			y := near[1]
 			if string(matrix[x][y]) != "." && ! unicode.IsDigit(matrix[x][y]) {
-				fmt.Println(numbers)
+				partNumbersSum += coordinatesToNumber(numbers)
 			}
 		}
 	}
 
-	return 0
+	return partNumbersSum
+}
+
+func coordinatesToNumber(coordinates [][]int) int {
+	var num int
+
+	for _, coordinate := range coordinates {
+		val, err := strconv.Atoi(string(matrix[coordinate[0]][coordinate[1]]))
+		if err != nil {
+			fmt.Errorf("something unexpected happened, %v", err)
+		}
+		num = num * 10 + val
+	}
+	// fmt.Println(num)
+	return num
 }
 
 // 467..114..
