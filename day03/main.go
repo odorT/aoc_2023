@@ -16,12 +16,12 @@ var (
 )
 
 func main() {
-	data, err := os.ReadFile("./little.txt")
+	data, err := os.ReadFile("./input.txt")
 	if err != nil {
 		panic(err)
 	}
 
-	// create 2d matrix from input
+	// create 2d matrix from file data
 	lines := strings.Split(string(data), "\n")
 
 	for _, line := range lines {
@@ -34,25 +34,28 @@ func main() {
 		matrix = append(matrix, lineSlice)
 	}
 
+	// set length of each line
+	ROWLENGTH = len(matrix[0])
+	COLUMNLENGTH = len(matrix)
+	
+
 	// store coordinates of each digit
-	// digitCoordinates: [ [ [], [] ], [ [] ], [ [], [], [] ] ]
+	// digitCoordinates: [ [ [01], [02], [03] ], [ [] ], [ [], [], [] ] ]
 	for idxI, i := range matrix {
 		var number [][]int
 
 		for idxJ, j := range i {
-
 			if unicode.IsDigit(j) {
 				number = append(number, []int{idxI, idxJ})
+				if idxJ == ROWLENGTH-1 {
+					digitCoordinates = append(digitCoordinates, number)
+				}
 			} else if len(number) != 0 {
 				digitCoordinates = append(digitCoordinates, number)
 				number = [][]int{}
 			}
 		}
 	}
-
-	// set length of each line
-	ROWLENGTH = len(matrix[0])
-	COLUMNLENGTH = len(matrix)
 
 	res1 := part1()
 	fmt.Println("part #1: ", res1)
@@ -63,7 +66,6 @@ func part1() int {
 	var partNumbersSum int
 
 	for _, numbers := range digitCoordinates {
-		fmt.Println(numbers)
 		var nearCoordinates [][]int
 
 		// find all near coordinates of each digit logically. e.g. all x's coordinates will be stored.
@@ -91,6 +93,21 @@ func part1() int {
 				}
 				if number[0]+1 < COLUMNLENGTH && number[1]-1 >= 0 {
 					nearCoordinates = append(nearCoordinates, []int{number[0] + 1, number[1] - 1}) // leftDown
+				}
+				// to get all surrounding adjacents
+				if len(numbers) == 1 {
+					// -
+					// |
+					// -
+					if number[0]-1 >= 0 && number[1]+1 < ROWLENGTH {
+						nearCoordinates = append(nearCoordinates, []int{number[0] - 1, number[1] + 1}) // rightUpper
+					}
+					if number[1]+1 < ROWLENGTH {
+						nearCoordinates = append(nearCoordinates, []int{number[0], number[1] + 1}) // right
+					}
+					if number[0]+1 < COLUMNLENGTH && number[1]+1 < ROWLENGTH {
+						nearCoordinates = append(nearCoordinates, []int{number[0] + 1, number[1] + 1}) // rightDown
+					}
 				}
 			} else if idx == len(numbers) - 1 {
 				// --
@@ -132,6 +149,7 @@ func part1() int {
 			y := near[1]
 			if string(matrix[x][y]) != "." && ! unicode.IsDigit(matrix[x][y]) {
 				partNumbersSum += coordinatesToNumber(numbers)
+				fmt.Println(coordinatesToNumber(numbers))
 			}
 		}
 	}
