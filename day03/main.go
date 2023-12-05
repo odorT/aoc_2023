@@ -13,6 +13,7 @@ var (
 	COLUMNLENGTH     int
 	matrix           [][]rune
 	digitCoordinates [][][]int
+	asteriskCoordinates [][][]rune
 )
 
 func main() {
